@@ -42,7 +42,6 @@ export function MentorPanel({ onClose }: Props) {
 
       setIsAnalyzing(true);
       setSteps([]);
-      stopTTS();
 
       try {
         let image_base64: string | null = null;
