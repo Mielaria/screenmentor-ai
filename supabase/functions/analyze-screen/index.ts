@@ -66,27 +66,48 @@ serve(async (req) => {
       );
     }
 
+    const visualAnalysis = image_base64 ? `
+ANALISIS VISUAL OBLIGATORIO ANTES DE RESPONDER:
+Si se proporciona una captura de pantalla, debes analizarla detalladamente antes de generar cualquier instruccion.
+Realiza internamente el siguiente analisis:
+1. Identifica el software visible (Photoshop, Canva o Shapr3D).
+2. Detecta el idioma de la interfaz (por ejemplo: espanol, ingles).
+3. Detecta si la interfaz corresponde a una version moderna o clasica segun: presencia de barra contextual flotante, estilo de iconos, distribucion de paneles, diseno del menu superior.
+4. Observa que paneles estan abiertos (capas, propiedades, herramientas, etc.).
+5. Determina si hay un documento abierto o si el usuario esta en pantalla inicial.
+6. Detecta si el modo es oscuro o claro.
+7. Ajusta las instrucciones exactamente a los elementos visibles en pantalla.
+
+REGLAS CRITICAS DE ANALISIS VISUAL:
+No asumas una version generica.
+No describas botones que no esten visibles en la captura.
+Usa referencias espaciales reales como: "En el panel derecho", "En la barra superior", "En la columna izquierda", "En la parte inferior del panel Capas".
+Si detectas que el idioma de la interfaz no es espanol, adapta los nombres de botones al idioma visible.
+Si no puedes determinar con certeza la version exacta, genera instrucciones basadas en la interfaz visible sin mencionar numero de version.
+No inventes elementos que no esten presentes en la imagen.
+` : '';
+
     const systemPrompt = `${softwareCtx}
 
 ${levelInstr}
-
+${visualAnalysis}
 INSTRUCCIONES DE FORMATO OBLIGATORIAS:
+Responde SIEMPRE en texto plano, sin formato especial, sin markdown, sin negritas, sin asteriscos.
 Responde unicamente en texto plano simple.
 NO utilices ningun tipo de formato Markdown.
 Esta estrictamente prohibido usar: asteriscos (*), dobles asteriscos (**), guiones para listas (-), subrayado (_), backticks, almohadillas (#), encabezados, cursivas, negritas, listas con vinetas, bloques de codigo, simbolos decorativos, emojis.
 No utilices formato enriquecido bajo ninguna circunstancia.
 La respuesta debe cumplir exactamente estas reglas:
-- Debe estar en espanol.
-- Debe ser una lista numerada.
-- Cada paso debe comenzar unicamente con un numero seguido de punto y espacio. Ejemplo: 1. Abre el panel derecho.
-- No agregues lineas decorativas.
-- No agregues texto antes de la lista.
-- No agregues texto despues de la lista.
-- No incluyas titulos ni encabezados.
-- No incluyas explicaciones fuera de los pasos numerados.
-- No incluyas advertencias ni notas adicionales.
-- Si la solicitud del usuario NO corresponde a las tareas soportadas del software seleccionado, responde EXACTAMENTE: "${OUT_OF_SCOPE_MSG}"
-- Si se proporciona una captura de pantalla, analizala para dar instrucciones contextuales basadas en lo que ves en pantalla.
+Debe estar en espanol.
+Debe ser una lista numerada.
+Cada paso debe comenzar unicamente con un numero seguido de punto y espacio. Ejemplo: 1. Abre el panel derecho.
+No agregues lineas decorativas.
+No agregues texto antes de la lista.
+No agregues texto despues de la lista.
+No incluyas titulos ni encabezados.
+No incluyas explicaciones fuera de los pasos numerados.
+No incluyas advertencias ni notas adicionales.
+Si la solicitud del usuario NO corresponde a las tareas soportadas del software seleccionado, responde EXACTAMENTE: "${OUT_OF_SCOPE_MSG}"
 Si generas cualquier simbolo de formato o estructura Markdown, la respuesta sera invalida.`;
 
     // Build input for the Responses API using the correct "message" format
