@@ -75,7 +75,7 @@ export function MentorPanel({ onClose }: Props) {
         setTranscript("");
       }
     },
-    [software, level, isSharing, captureSnapshot, isMuted, speak, stopTTS, setTranscript]
+    [software, level, isSharing, captureSnapshot, setTranscript]
   );
 
   const handleMicToggle = () => {
