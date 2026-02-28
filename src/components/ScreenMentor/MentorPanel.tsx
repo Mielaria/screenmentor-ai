@@ -66,6 +66,7 @@ export function MentorPanel({ onClose }: Props) {
           return;
         }
 
+        const resultSteps: string[] = data?.steps || ["No se generaron instrucciones."];
         setSteps(resultSteps);
       } catch (err: any) {
         console.error("Analysis error:", err);
