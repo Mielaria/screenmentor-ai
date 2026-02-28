@@ -45,15 +45,48 @@ export function MentorPanel({ onClose, onMinimize }: Props) {
     document.body.style.userSelect = "none";
   }, [position]);
 
+  // Resize handler
+  const handleResizeDown = useCallback((e: React.MouseEvent, edge: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isResizing.current = edge;
+    resizeStart.current = { x: e.clientX, y: e.clientY, w: size.w, h: size.h, px: position.x, py: position.y };
+    document.body.style.userSelect = "none";
+  }, [size, position]);
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current) return;
-      const newX = Math.max(0, Math.min(window.innerWidth - 360, e.clientX - dragOffset.current.x));
-      const newY = Math.max(0, Math.min(window.innerHeight - 100, e.clientY - dragOffset.current.y));
-      setPosition({ x: newX, y: newY });
+      if (isDragging.current) {
+        const newX = Math.max(0, Math.min(window.innerWidth - size.w, e.clientX - dragOffset.current.x));
+        const newY = Math.max(0, Math.min(window.innerHeight - 100, e.clientY - dragOffset.current.y));
+        setPosition({ x: newX, y: newY });
+      } else if (isResizing.current) {
+        const dx = e.clientX - resizeStart.current.x;
+        const dy = e.clientY - resizeStart.current.y;
+        const edge = isResizing.current;
+        let newW = resizeStart.current.w;
+        let newH = resizeStart.current.h;
+        let newX = resizeStart.current.px;
+        let newY = resizeStart.current.py;
+
+        if (edge.includes("r")) newW = Math.max(300, Math.min(600, resizeStart.current.w + dx));
+        if (edge.includes("l")) {
+          newW = Math.max(300, Math.min(600, resizeStart.current.w - dx));
+          newX = resizeStart.current.px + (resizeStart.current.w - newW);
+        }
+        if (edge.includes("b")) newH = Math.max(350, Math.min(900, resizeStart.current.h + dy));
+        if (edge.includes("t")) {
+          newH = Math.max(350, Math.min(900, resizeStart.current.h - dy));
+          newY = resizeStart.current.py + (resizeStart.current.h - newH);
+        }
+
+        setSize({ w: newW, h: newH });
+        setPosition({ x: newX, y: newY });
+      }
     };
     const handleMouseUp = () => {
       isDragging.current = false;
+      isResizing.current = null;
       document.body.style.userSelect = "";
     };
     window.addEventListener("mousemove", handleMouseMove);
@@ -62,7 +95,7 @@ export function MentorPanel({ onClose, onMinimize }: Props) {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, []);
+  }, [size]);
 
   useEffect(() => {
     if (transcript && !isAnalyzing) {
