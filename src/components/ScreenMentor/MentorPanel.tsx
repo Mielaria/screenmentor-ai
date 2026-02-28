@@ -5,7 +5,6 @@ import { LevelSelector } from "./LevelSelector";
 import { ResponseArea } from "./ResponseArea";
 import { useScreenShare } from "@/hooks/useScreenShare";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
-import { useTTS } from "@/hooks/useTTS";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -25,7 +24,7 @@ export function MentorPanel({ onClose }: Props) {
 
   const { isSharing, startSharing, stopSharing, captureSnapshot } = useScreenShare();
   const { isListening, transcript, startListening, stopListening, setTranscript } = useVoiceInput();
-  const { speak, stop: stopTTS } = useTTS();
+  
 
   // When transcript is ready, trigger analysis
   useEffect(() => {
@@ -43,7 +42,6 @@ export function MentorPanel({ onClose }: Props) {
 
       setIsAnalyzing(true);
       setSteps([]);
-      stopTTS();
 
       try {
         let image_base64: string | null = null;
@@ -70,10 +68,6 @@ export function MentorPanel({ onClose }: Props) {
 
         const resultSteps: string[] = data?.steps || ["No se generaron instrucciones."];
         setSteps(resultSteps);
-
-        if (!isMuted) {
-          speak(resultSteps.join(". "));
-        }
       } catch (err: any) {
         console.error("Analysis error:", err);
         toast.error("Error al analizar. Intenta de nuevo.");
@@ -82,7 +76,7 @@ export function MentorPanel({ onClose }: Props) {
         setTranscript("");
       }
     },
-    [software, level, isSharing, captureSnapshot, isMuted, speak, stopTTS, setTranscript]
+    [software, level, isSharing, captureSnapshot, setTranscript]
   );
 
   const handleMicToggle = () => {
@@ -144,7 +138,7 @@ export function MentorPanel({ onClose }: Props) {
         <LevelSelector selected={level} onSelect={setLevel} />
 
         {/* Response */}
-        <ResponseArea steps={steps} isAnalyzing={isAnalyzing} />
+        <ResponseArea steps={steps} isAnalyzing={isAnalyzing} isMuted={isMuted} />
       </div>
 
       {/* Footer actions */}
@@ -174,7 +168,7 @@ export function MentorPanel({ onClose }: Props) {
         <button
           onClick={() => {
             setIsMuted(!isMuted);
-            if (!isMuted) stopTTS();
+            if (!isMuted) window.speechSynthesis.cancel();
           }}
           className="p-3 rounded-lg bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
         >
