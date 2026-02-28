@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { X, Monitor, Mic, MicOff, Volume2, VolumeX, MonitorOff } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { X, Monitor, Mic, MicOff, Volume2, VolumeX, MonitorOff, Minus, GripHorizontal } from "lucide-react";
 import { SoftwareSelector } from "./SoftwareSelector";
 import { LevelSelector } from "./LevelSelector";
 import { ResponseArea } from "./ResponseArea";
@@ -13,20 +13,54 @@ type Level = "Basico" | "Intermedio" | "Avanzado";
 
 interface Props {
   onClose: () => void;
+  onMinimize: () => void;
 }
 
-export function MentorPanel({ onClose }: Props) {
+export function MentorPanel({ onClose, onMinimize }: Props) {
   const [software, setSoftware] = useState<Software | null>(null);
   const [level, setLevel] = useState<Level | null>(null);
   const [steps, setSteps] = useState<string[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
 
+  // Drag state
+  const [position, setPosition] = useState({ x: window.innerWidth - 380, y: 60 });
+  const dragRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
+
   const { isSharing, startSharing, stopSharing, captureSnapshot } = useScreenShare();
   const { isListening, transcript, startListening, stopListening, setTranscript } = useVoiceInput();
-  
 
-  // When transcript is ready, trigger analysis
+  // Drag handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    isDragging.current = true;
+    dragOffset.current = {
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
+    };
+    document.body.style.userSelect = "none";
+  }, [position]);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return;
+      const newX = Math.max(0, Math.min(window.innerWidth - 360, e.clientX - dragOffset.current.x));
+      const newY = Math.max(0, Math.min(window.innerHeight - 100, e.clientY - dragOffset.current.y));
+      setPosition({ x: newX, y: newY });
+    };
+    const handleMouseUp = () => {
+      isDragging.current = false;
+      document.body.style.userSelect = "";
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
+
   useEffect(() => {
     if (transcript && !isAnalyzing) {
       handleAnalyze(transcript);
@@ -90,64 +124,82 @@ export function MentorPanel({ onClose }: Props) {
   const canQuery = !!software && !!level;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full max-w-md bg-mentor-panel border-l border-border mentor-panel-shadow slide-in-right z-50 flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
-        <div className="flex items-center gap-2.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-primary mentor-glow-sm" />
-          <h2 className="text-sm font-semibold text-foreground tracking-tight">
-            ScreenMentor AI
-          </h2>
+    <div
+      ref={dragRef}
+      className="fixed z-50 flex flex-col rounded-2xl border border-border overflow-hidden"
+      style={{
+        left: position.x,
+        top: position.y,
+        width: 350,
+        maxHeight: "80vh",
+        background: "hsl(var(--mentor-panel) / 0.95)",
+        backdropFilter: "blur(16px)",
+        boxShadow: "0 8px 40px hsl(225 25% 0% / 0.6), 0 0 0 1px hsl(var(--border) / 0.4)",
+      }}
+    >
+      {/* Title bar — draggable */}
+      <div
+        onMouseDown={handleMouseDown}
+        className="flex items-center justify-between px-3 py-2 cursor-grab active:cursor-grabbing select-none border-b border-border/60"
+        style={{ background: "hsl(var(--mentor-surface) / 0.8)" }}
+      >
+        <div className="flex items-center gap-2">
+          <GripHorizontal className="w-3.5 h-3.5 text-muted-foreground/50" />
+          <div className="w-2 h-2 rounded-full bg-primary mentor-glow-sm" />
+          <span className="text-xs font-semibold text-foreground tracking-tight">
+            ScreenMentor
+          </span>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={onMinimize}
+            className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
+          >
+            <Minus className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={onClose}
+            className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-destructive/20 transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-5">
+      <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
         {/* Screen share */}
-        <div className="space-y-2">
-          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Pantalla
-          </span>
-          <button
-            onClick={isSharing ? stopSharing : startSharing}
-            className={`w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 border ${
-              isSharing
-                ? "bg-primary/10 border-primary text-primary"
-                : "bg-secondary/50 border-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
-          >
-            {isSharing ? (
-              <>
-                <MonitorOff className="w-4 h-4" /> Dejar de compartir
-              </>
-            ) : (
-              <>
-                <Monitor className="w-4 h-4" /> Compartir pantalla
-              </>
-            )}
-          </button>
-        </div>
+        <button
+          onClick={isSharing ? stopSharing : startSharing}
+          className={`w-full flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all duration-200 border ${
+            isSharing
+              ? "bg-primary/10 border-primary text-primary"
+              : "bg-secondary/50 border-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
+          }`}
+        >
+          {isSharing ? (
+            <>
+              <MonitorOff className="w-3.5 h-3.5" /> Dejar de compartir
+            </>
+          ) : (
+            <>
+              <Monitor className="w-3.5 h-3.5" /> Compartir pantalla
+            </>
+          )}
+        </button>
 
         <SoftwareSelector selected={software} onSelect={setSoftware} />
         <LevelSelector selected={level} onSelect={setLevel} />
 
-        {/* Response */}
         <ResponseArea steps={steps} isAnalyzing={isAnalyzing} isMuted={isMuted} />
       </div>
 
-      {/* Footer actions */}
-      <div className="p-4 border-t border-border flex items-center gap-3">
-        {/* Mic */}
+      {/* Footer */}
+      <div className="p-3 border-t border-border/60 flex items-center gap-2">
         <button
           onClick={handleMicToggle}
           disabled={!canQuery || isAnalyzing}
-          className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${
+          className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-xs font-semibold transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${
             isListening
               ? "bg-destructive text-destructive-foreground pulse-ring"
               : "bg-primary text-primary-foreground hover:brightness-110"
@@ -155,24 +207,23 @@ export function MentorPanel({ onClose }: Props) {
         >
           {isListening ? (
             <>
-              <MicOff className="w-4 h-4" /> Escuchando…
+              <MicOff className="w-3.5 h-3.5" /> Escuchando…
             </>
           ) : (
             <>
-              <Mic className="w-4 h-4" /> Consultar
+              <Mic className="w-3.5 h-3.5" /> Consultar
             </>
           )}
         </button>
 
-        {/* Mute TTS */}
         <button
           onClick={() => {
             setIsMuted(!isMuted);
             if (!isMuted) window.speechSynthesis.cancel();
           }}
-          className="p-3 rounded-lg bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+          className="p-2.5 rounded-lg bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
         >
-          {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
         </button>
       </div>
     </div>
