@@ -24,7 +24,7 @@ export function MentorPanel({ onClose }: Props) {
 
   const { isSharing, startSharing, stopSharing, captureSnapshot } = useScreenShare();
   const { isListening, transcript, startListening, stopListening, setTranscript } = useVoiceInput();
-  const { speak, stop: stopTTS } = useTTS();
+  
 
   // When transcript is ready, trigger analysis
   useEffect(() => {
