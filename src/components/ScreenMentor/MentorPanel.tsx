@@ -166,13 +166,22 @@ export function MentorPanel({ onClose, onMinimize }: Props) {
       style={{
         left: position.x,
         top: position.y,
-        width: 350,
-        maxHeight: "80vh",
+        width: size.w,
+        height: size.h,
         background: "hsl(var(--mentor-panel) / 0.95)",
         backdropFilter: "blur(16px)",
         boxShadow: "0 8px 40px hsl(225 25% 0% / 0.6), 0 0 0 1px hsl(var(--border) / 0.4)",
       }}
     >
+      {/* Resize handles */}
+      <div onMouseDown={(e) => handleResizeDown(e, "r")} className="absolute top-0 right-0 w-1.5 h-full cursor-ew-resize z-10" />
+      <div onMouseDown={(e) => handleResizeDown(e, "b")} className="absolute bottom-0 left-0 w-full h-1.5 cursor-ns-resize z-10" />
+      <div onMouseDown={(e) => handleResizeDown(e, "l")} className="absolute top-0 left-0 w-1.5 h-full cursor-ew-resize z-10" />
+      <div onMouseDown={(e) => handleResizeDown(e, "t")} className="absolute top-0 left-0 w-full h-1.5 cursor-ns-resize z-10" />
+      <div onMouseDown={(e) => handleResizeDown(e, "br")} className="absolute bottom-0 right-0 w-3 h-3 cursor-nwse-resize z-20" />
+      <div onMouseDown={(e) => handleResizeDown(e, "bl")} className="absolute bottom-0 left-0 w-3 h-3 cursor-nesw-resize z-20" />
+      <div onMouseDown={(e) => handleResizeDown(e, "tr")} className="absolute top-0 right-0 w-3 h-3 cursor-nesw-resize z-20" />
+      <div onMouseDown={(e) => handleResizeDown(e, "tl")} className="absolute top-0 left-0 w-3 h-3 cursor-nwse-resize z-20" />
       {/* Title bar — draggable */}
       <div
         onMouseDown={handleMouseDown}
