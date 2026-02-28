@@ -168,7 +168,7 @@ export function MentorPanel({ onClose }: Props) {
         <button
           onClick={() => {
             setIsMuted(!isMuted);
-            if (!isMuted) stopTTS();
+            if (!isMuted) window.speechSynthesis.cancel();
           }}
           className="p-3 rounded-lg bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
         >
