@@ -3,8 +3,10 @@ import { FloatingButton } from "@/components/ScreenMentor/FloatingButton";
 import { MentorPanel } from "@/components/ScreenMentor/MentorPanel";
 import { Bot, Monitor, Mic, Sparkles } from "lucide-react";
 
+type PanelState = "closed" | "open" | "minimized";
+
 const Index = () => {
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [panelState, setPanelState] = useState<PanelState>("closed");
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 relative overflow-hidden">
@@ -46,7 +48,7 @@ const Index = () => {
 
         {/* CTA */}
         <button
-          onClick={() => setIsPanelOpen(true)}
+          onClick={() => setPanelState("open")}
           className="inline-flex items-center gap-2 mt-4 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:brightness-110 transition-all mentor-glow"
         >
           <Bot className="w-5 h-5" />
@@ -54,11 +56,18 @@ const Index = () => {
         </button>
       </div>
 
-      {/* Floating button (visible when panel closed) */}
-      {!isPanelOpen && <FloatingButton onClick={() => setIsPanelOpen(true)} />}
+      {/* Floating restore button (visible when minimized) */}
+      {panelState === "minimized" && (
+        <FloatingButton onClick={() => setPanelState("open")} />
+      )}
 
-      {/* Panel */}
-      {isPanelOpen && <MentorPanel onClose={() => setIsPanelOpen(false)} />}
+      {/* Floating copilot panel */}
+      {panelState === "open" && (
+        <MentorPanel
+          onClose={() => setPanelState("closed")}
+          onMinimize={() => setPanelState("minimized")}
+        />
+      )}
     </div>
   );
 };
