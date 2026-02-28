@@ -66,12 +66,7 @@ export function MentorPanel({ onClose }: Props) {
           return;
         }
 
-        const resultSteps: string[] = data?.steps || ["No se generaron instrucciones."];
         setSteps(resultSteps);
-
-        if (!isMuted) {
-          speak(resultSteps.join(". "));
-        }
       } catch (err: any) {
         console.error("Analysis error:", err);
         toast.error("Error al analizar. Intenta de nuevo.");
