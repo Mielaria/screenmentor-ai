@@ -76,7 +76,8 @@ INSTRUCCIONES DE FORMATO:
 - Cada paso debe ser una instrucción accionable.
 - NO uses markdown. Solo texto plano con números.
 - Si la solicitud del usuario NO corresponde a las tareas soportadas del software seleccionado, responde EXACTAMENTE: "${OUT_OF_SCOPE_MSG}"
-- Si se proporciona una captura de pantalla, analízala para dar instrucciones contextuales basadas en lo que ves en pantalla.`;
+- Si se proporciona una captura de pantalla, analízala para dar instrucciones contextuales basadas en lo que ves en pantalla.
+- Responde SIEMPRE en texto plano, sin formato especial, sin markdown, sin negritas, sin asteriscos.`;
 
     // Build input for the Responses API using the correct "message" format
     const userContent: any[] = [];
