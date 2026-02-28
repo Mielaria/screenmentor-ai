@@ -25,9 +25,12 @@ export function MentorPanel({ onClose, onMinimize }: Props) {
 
   // Drag state
   const [position, setPosition] = useState({ x: window.innerWidth - 380, y: 60 });
+  const [size, setSize] = useState({ w: 350, h: 520 });
   const dragRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+  const isResizing = useRef<string | null>(null);
   const dragOffset = useRef({ x: 0, y: 0 });
+  const resizeStart = useRef({ x: 0, y: 0, w: 0, h: 0, px: 0, py: 0 });
 
   const { isSharing, startSharing, stopSharing, captureSnapshot } = useScreenShare();
   const { isListening, transcript, startListening, stopListening, setTranscript } = useVoiceInput();
@@ -42,15 +45,48 @@ export function MentorPanel({ onClose, onMinimize }: Props) {
     document.body.style.userSelect = "none";
   }, [position]);
 
+  // Resize handler
+  const handleResizeDown = useCallback((e: React.MouseEvent, edge: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isResizing.current = edge;
+    resizeStart.current = { x: e.clientX, y: e.clientY, w: size.w, h: size.h, px: position.x, py: position.y };
+    document.body.style.userSelect = "none";
+  }, [size, position]);
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current) return;
-      const newX = Math.max(0, Math.min(window.innerWidth - 360, e.clientX - dragOffset.current.x));
-      const newY = Math.max(0, Math.min(window.innerHeight - 100, e.clientY - dragOffset.current.y));
-      setPosition({ x: newX, y: newY });
+      if (isDragging.current) {
+        const newX = Math.max(0, Math.min(window.innerWidth - size.w, e.clientX - dragOffset.current.x));
+        const newY = Math.max(0, Math.min(window.innerHeight - 100, e.clientY - dragOffset.current.y));
+        setPosition({ x: newX, y: newY });
+      } else if (isResizing.current) {
+        const dx = e.clientX - resizeStart.current.x;
+        const dy = e.clientY - resizeStart.current.y;
+        const edge = isResizing.current;
+        let newW = resizeStart.current.w;
+        let newH = resizeStart.current.h;
+        let newX = resizeStart.current.px;
+        let newY = resizeStart.current.py;
+
+        if (edge.includes("r")) newW = Math.max(300, Math.min(600, resizeStart.current.w + dx));
+        if (edge.includes("l")) {
+          newW = Math.max(300, Math.min(600, resizeStart.current.w - dx));
+          newX = resizeStart.current.px + (resizeStart.current.w - newW);
+        }
+        if (edge.includes("b")) newH = Math.max(350, Math.min(900, resizeStart.current.h + dy));
+        if (edge.includes("t")) {
+          newH = Math.max(350, Math.min(900, resizeStart.current.h - dy));
+          newY = resizeStart.current.py + (resizeStart.current.h - newH);
+        }
+
+        setSize({ w: newW, h: newH });
+        setPosition({ x: newX, y: newY });
+      }
     };
     const handleMouseUp = () => {
       isDragging.current = false;
+      isResizing.current = null;
       document.body.style.userSelect = "";
     };
     window.addEventListener("mousemove", handleMouseMove);
@@ -59,7 +95,7 @@ export function MentorPanel({ onClose, onMinimize }: Props) {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, []);
+  }, [size]);
 
   useEffect(() => {
     if (transcript && !isAnalyzing) {
@@ -130,13 +166,22 @@ export function MentorPanel({ onClose, onMinimize }: Props) {
       style={{
         left: position.x,
         top: position.y,
-        width: 350,
-        maxHeight: "80vh",
+        width: size.w,
+        height: size.h,
         background: "hsl(var(--mentor-panel) / 0.95)",
         backdropFilter: "blur(16px)",
         boxShadow: "0 8px 40px hsl(225 25% 0% / 0.6), 0 0 0 1px hsl(var(--border) / 0.4)",
       }}
     >
+      {/* Resize handles */}
+      <div onMouseDown={(e) => handleResizeDown(e, "r")} className="absolute top-0 right-0 w-1.5 h-full cursor-ew-resize z-10" />
+      <div onMouseDown={(e) => handleResizeDown(e, "b")} className="absolute bottom-0 left-0 w-full h-1.5 cursor-ns-resize z-10" />
+      <div onMouseDown={(e) => handleResizeDown(e, "l")} className="absolute top-0 left-0 w-1.5 h-full cursor-ew-resize z-10" />
+      <div onMouseDown={(e) => handleResizeDown(e, "t")} className="absolute top-0 left-0 w-full h-1.5 cursor-ns-resize z-10" />
+      <div onMouseDown={(e) => handleResizeDown(e, "br")} className="absolute bottom-0 right-0 w-3 h-3 cursor-nwse-resize z-20" />
+      <div onMouseDown={(e) => handleResizeDown(e, "bl")} className="absolute bottom-0 left-0 w-3 h-3 cursor-nesw-resize z-20" />
+      <div onMouseDown={(e) => handleResizeDown(e, "tr")} className="absolute top-0 right-0 w-3 h-3 cursor-nesw-resize z-20" />
+      <div onMouseDown={(e) => handleResizeDown(e, "tl")} className="absolute top-0 left-0 w-3 h-3 cursor-nwse-resize z-20" />
       {/* Title bar — draggable */}
       <div
         onMouseDown={handleMouseDown}
