@@ -5,7 +5,6 @@ import { LevelSelector } from "./LevelSelector";
 import { ResponseArea } from "./ResponseArea";
 import { useScreenShare } from "@/hooks/useScreenShare";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
-import { useTTS } from "@/hooks/useTTS";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
