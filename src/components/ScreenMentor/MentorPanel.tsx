@@ -25,9 +25,12 @@ export function MentorPanel({ onClose, onMinimize }: Props) {
 
   // Drag state
   const [position, setPosition] = useState({ x: window.innerWidth - 380, y: 60 });
+  const [size, setSize] = useState({ w: 350, h: 520 });
   const dragRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+  const isResizing = useRef<string | null>(null);
   const dragOffset = useRef({ x: 0, y: 0 });
+  const resizeStart = useRef({ x: 0, y: 0, w: 0, h: 0, px: 0, py: 0 });
 
   const { isSharing, startSharing, stopSharing, captureSnapshot } = useScreenShare();
   const { isListening, transcript, startListening, stopListening, setTranscript } = useVoiceInput();
