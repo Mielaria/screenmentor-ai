@@ -78,23 +78,32 @@ INSTRUCCIONES DE FORMATO:
 - Si la solicitud del usuario NO corresponde a las tareas soportadas del software seleccionado, responde EXACTAMENTE: "${OUT_OF_SCOPE_MSG}"
 - Si se proporciona una captura de pantalla, analízala para dar instrucciones contextuales basadas en lo que ves en pantalla.`;
 
-    // Build input array for the Responses API
-    const input: any[] = [
-      { type: "input_text", text: systemPrompt },
-    ];
+    // Build input for the Responses API using the correct "message" format
+    const userContent: any[] = [];
 
     if (image_base64) {
-      input.push({
+      userContent.push({
         type: "input_image",
         image_url: `data:image/jpeg;base64,${image_base64}`,
         detail: "low",
       });
     }
 
-    input.push({
+    userContent.push({
       type: "input_text",
       text: `Software: ${software_seleccionado}\nNivel: ${nivel_usuario}\nSolicitud del usuario: ${texto_transcrito}`,
     });
+
+    const input = [
+      {
+        role: "developer",
+        content: systemPrompt,
+      },
+      {
+        role: "user",
+        content: userContent,
+      },
+    ];
 
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
