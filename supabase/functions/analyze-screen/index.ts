@@ -39,9 +39,9 @@ serve(async (req) => {
   }
 
   try {
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-    if (!OPENAI_API_KEY) {
-      throw new Error("OPENAI_API_KEY is not configured");
+    const API_KEY = Deno.env.get("CLAVE_API_DE_OPENAI");
+    if (!API_KEY) {
+      throw new Error("CLAVE_API_DE_OPENAI is not configured");
     }
 
     const { image_base64, texto_transcrito, nivel_usuario, software_seleccionado } = await req.json();
@@ -78,43 +78,41 @@ INSTRUCCIONES DE FORMATO:
 - Si la solicitud del usuario NO corresponde a las tareas soportadas del software seleccionado, responde EXACTAMENTE: "${OUT_OF_SCOPE_MSG}"
 - Si se proporciona una captura de pantalla, analízala para dar instrucciones contextuales basadas en lo que ves en pantalla.`;
 
-    const userContent: any[] = [];
+    // Build input array for the Responses API
+    const input: any[] = [
+      { type: "input_text", text: systemPrompt },
+    ];
 
     if (image_base64) {
-      userContent.push({
-        type: "image_url",
-        image_url: {
-          url: `data:image/jpeg;base64,${image_base64}`,
-          detail: "low",
-        },
+      input.push({
+        type: "input_image",
+        image_url: `data:image/jpeg;base64,${image_base64}`,
+        detail: "low",
       });
     }
 
-    userContent.push({
-      type: "text",
+    input.push({
+      type: "input_text",
       text: `Software: ${software_seleccionado}\nNivel: ${nivel_usuario}\nSolicitud del usuario: ${texto_transcrito}`,
     });
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         model: "gpt-4o",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userContent },
-        ],
-        max_tokens: 1024,
+        input,
+        max_output_tokens: 1024,
         temperature: 0.3,
       }),
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error("OpenAI error:", response.status, errText);
+      console.error("OpenAI Responses API error:", response.status, errText);
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Límite de solicitudes excedido. Intenta de nuevo en unos segundos." }),
@@ -128,14 +126,21 @@ INSTRUCCIONES DE FORMATO:
     }
 
     const data = await response.json();
-    const rawText = data.choices?.[0]?.message?.content || OUT_OF_SCOPE_MSG;
+
+    // Extract text from the Responses API output
+    const outputText = data.output
+      ?.filter((item: any) => item.type === "message")
+      ?.flatMap((item: any) => item.content)
+      ?.filter((c: any) => c.type === "output_text")
+      ?.map((c: any) => c.text)
+      ?.join("\n") || OUT_OF_SCOPE_MSG;
 
     // Parse numbered steps
-    const lines = rawText.split("\n").filter((l: string) => l.trim());
+    const lines = outputText.split("\n").filter((l: string) => l.trim());
     const steps = lines.map((l: string) => l.replace(/^\d+[\.\)\-]\s*/, "").trim()).filter(Boolean);
 
     return new Response(
-      JSON.stringify({ steps, raw: rawText }),
+      JSON.stringify({ steps, raw: outputText }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
