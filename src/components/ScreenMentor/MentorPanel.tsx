@@ -137,7 +137,7 @@ export function MentorPanel({ onClose }: Props) {
         <LevelSelector selected={level} onSelect={setLevel} />
 
         {/* Response */}
-        <ResponseArea steps={steps} isAnalyzing={isAnalyzing} />
+        <ResponseArea steps={steps} isAnalyzing={isAnalyzing} isMuted={isMuted} />
       </div>
 
       {/* Footer actions */}
