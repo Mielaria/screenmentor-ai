@@ -70,14 +70,24 @@ serve(async (req) => {
 
 ${levelInstr}
 
-INSTRUCCIONES DE FORMATO:
-- Responde SIEMPRE en español.
-- Genera una lista de pasos numerados claros.
-- Cada paso debe ser una instrucción accionable.
-- NO uses markdown. Solo texto plano con números.
+INSTRUCCIONES DE FORMATO OBLIGATORIAS:
+Responde unicamente en texto plano simple.
+NO utilices ningun tipo de formato Markdown.
+Esta estrictamente prohibido usar: asteriscos (*), dobles asteriscos (**), guiones para listas (-), subrayado (_), backticks, almohadillas (#), encabezados, cursivas, negritas, listas con vinetas, bloques de codigo, simbolos decorativos, emojis.
+No utilices formato enriquecido bajo ninguna circunstancia.
+La respuesta debe cumplir exactamente estas reglas:
+- Debe estar en espanol.
+- Debe ser una lista numerada.
+- Cada paso debe comenzar unicamente con un numero seguido de punto y espacio. Ejemplo: 1. Abre el panel derecho.
+- No agregues lineas decorativas.
+- No agregues texto antes de la lista.
+- No agregues texto despues de la lista.
+- No incluyas titulos ni encabezados.
+- No incluyas explicaciones fuera de los pasos numerados.
+- No incluyas advertencias ni notas adicionales.
 - Si la solicitud del usuario NO corresponde a las tareas soportadas del software seleccionado, responde EXACTAMENTE: "${OUT_OF_SCOPE_MSG}"
-- Si se proporciona una captura de pantalla, analízala para dar instrucciones contextuales basadas en lo que ves en pantalla.
-- Responde SIEMPRE en texto plano, sin formato especial, sin markdown, sin negritas, sin asteriscos.`;
+- Si se proporciona una captura de pantalla, analizala para dar instrucciones contextuales basadas en lo que ves en pantalla.
+Si generas cualquier simbolo de formato o estructura Markdown, la respuesta sera invalida.`;
 
     // Build input for the Responses API using the correct "message" format
     const userContent: any[] = [];
