@@ -1,14 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FloatingButton } from "@/components/ScreenMentor/FloatingButton";
 import { MentorPanel } from "@/components/ScreenMentor/MentorPanel";
 import { Bot, Monitor, Mic, Sparkles, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 type PanelState = "closed" | "open" | "minimized";
 
 const Index = () => {
   const [panelState, setPanelState] = useState<PanelState>("closed");
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const [fullName, setFullName] = useState<string>("");
+
+  useEffect(() => {
+    if (!user) { setFullName(""); return; }
+    supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("user_id", user.id)
+      .single()
+      .then(({ data }) => {
+        if (data?.full_name) setFullName(data.full_name);
+      });
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 relative overflow-hidden">
@@ -25,6 +39,12 @@ const Index = () => {
 
       {/* Hero */}
       <div className="text-center max-w-xl z-10 space-y-6">
+        {fullName && (
+          <p className="text-lg sm:text-xl font-medium text-foreground animate-fade-in">
+            Hola, <span className="text-primary">{fullName}</span>. ¿Qué quieres crear hoy?
+          </p>
+        )}
+
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium">
           <Sparkles className="w-3.5 h-3.5" />
           Demo MVP — Photoshop · Canva · Shapr3D
