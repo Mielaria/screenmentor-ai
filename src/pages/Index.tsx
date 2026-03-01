@@ -8,9 +8,18 @@ type PanelState = "closed" | "open" | "minimized";
 
 const Index = () => {
   const [panelState, setPanelState] = useState<PanelState>("closed");
+  const { signOut } = useAuth();
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 relative overflow-hidden">
+      {/* Logout button */}
+      <button
+        onClick={signOut}
+        className="absolute top-4 right-4 z-40 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/60 border border-border text-muted-foreground hover:text-foreground hover:bg-secondary text-xs font-medium transition-colors"
+      >
+        <LogOut className="w-3.5 h-3.5" />
+        Cerrar sesión
+      </button>
       {/* Ambient glow */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
