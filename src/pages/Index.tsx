@@ -91,7 +91,9 @@ const Index = () => {
       </div>
 
       {/* Feedback section */}
-      <FeedbackSection />
+      <div className="-mt-24">
+        <FeedbackSection />
+      </div>
 
       {/* Info section */}
       <section className="w-full max-w-3xl mx-auto py-10 px-6 text-center space-y-6">
