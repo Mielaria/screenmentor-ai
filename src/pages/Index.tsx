@@ -4,6 +4,7 @@ import { MentorPanel } from "@/components/ScreenMentor/MentorPanel";
 import { Bot, Monitor, Mic, Sparkles, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { FeedbackSection } from "@/components/ScreenMentor/FeedbackSection";
 
 type PanelState = "closed" | "open" | "minimized";
 
