@@ -90,6 +90,9 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Feedback section */}
+      <FeedbackSection />
+
       {/* Info section */}
       <section className="w-full max-w-3xl mx-auto py-10 px-6 text-center space-y-6">
         <div className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-8 sm:p-12 space-y-5">
