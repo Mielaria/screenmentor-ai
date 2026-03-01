@@ -41,7 +41,7 @@ const Index = () => {
       <div className="text-center max-w-xl z-10 space-y-6">
         {fullName && (
           <p className="text-lg sm:text-xl font-medium text-foreground animate-fade-in">
-            Hola, <span className="text-primary">{fullName}</span>. ¿Qué quieres crear hoy?
+            Hola, <span className="text-primary">{fullName}</span>. ¿En qué te puedo ayudar hoy?
           </p>
         )}
 
