@@ -77,7 +77,7 @@ export function ResponseArea({ steps, isAnalyzing, isMuted }: Props) {
       </span>
 
       {/* Step list */}
-      <ol className="space-y-2 max-h-[35vh] overflow-y-auto pr-1 custom-scrollbar">
+      <ol className="space-y-2">
         {steps.map((step, i) => {
           const isActive = i === currentStepIndex;
           return (
