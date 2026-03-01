@@ -25,38 +25,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Tab-scoped session: if no sessionStorage flag exists, this is a new tab → sign out
     const tabFlag = sessionStorage.getItem(TAB_SESSION_KEY);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
-        setSession(newSession);
-        if (newSession) {
-          sessionStorage.setItem(TAB_SESSION_KEY, "active");
-        } else {
-          sessionStorage.removeItem(TAB_SESSION_KEY);
-        }
-        setLoading(false);
-      }
-    );
+    let subscription: { unsubscribe: () => void } | undefined;
 
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      if (currentSession && !tabFlag) {
-        // Session exists in localStorage but this is a fresh tab → invalidate
-        supabase.auth.signOut().then(() => {
-          setSession(null);
+    try {
+      const { data } = supabase.auth.onAuthStateChange(
+        (_event, newSession) => {
+          setSession(newSession);
+          if (newSession) {
+            sessionStorage.setItem(TAB_SESSION_KEY, "active");
+          } else {
+            sessionStorage.removeItem(TAB_SESSION_KEY);
+          }
           setLoading(false);
-        });
-      } else {
-        setSession(currentSession);
-        if (currentSession) {
-          sessionStorage.setItem(TAB_SESSION_KEY, "active");
         }
-        setLoading(false);
-      }
-    });
+      );
+      subscription = data.subscription;
+    } catch (err) {
+      console.error("Auth listener error:", err);
+      setLoading(false);
+    }
 
-    return () => subscription.unsubscribe();
+    supabase.auth.getSession()
+      .then(({ data: { session: currentSession } }) => {
+        if (currentSession && !tabFlag) {
+          supabase.auth.signOut()
+            .then(() => {
+              setSession(null);
+              setLoading(false);
+            })
+            .catch(() => {
+              setSession(null);
+              setLoading(false);
+            });
+        } else {
+          setSession(currentSession);
+          if (currentSession) {
+            sessionStorage.setItem(TAB_SESSION_KEY, "active");
+          }
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("getSession error:", err);
+        setSession(null);
+        setLoading(false);
+      });
+
+    return () => subscription?.unsubscribe();
   }, []);
 
   const signOut = async () => {
