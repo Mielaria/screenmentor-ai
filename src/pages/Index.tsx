@@ -4,6 +4,7 @@ import { MentorPanel } from "@/components/ScreenMentor/MentorPanel";
 import { Bot, Monitor, Mic, Sparkles, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { FeedbackSection } from "@/components/ScreenMentor/FeedbackSection";
 
 type PanelState = "closed" | "open" | "minimized";
 
@@ -88,6 +89,9 @@ const Index = () => {
           </button>
         </div>
       </div>
+
+      {/* Feedback section */}
+      <FeedbackSection />
 
       {/* Info section */}
       <section className="w-full max-w-3xl mx-auto py-10 px-6 text-center space-y-6">
