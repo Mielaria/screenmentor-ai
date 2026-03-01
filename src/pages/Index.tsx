@@ -39,6 +39,12 @@ const Index = () => {
 
       {/* Hero */}
       <div className="text-center max-w-xl z-10 space-y-6">
+        {fullName && (
+          <p className="text-lg sm:text-xl font-medium text-foreground animate-fade-in">
+            Hola, <span className="text-primary">{fullName}</span>. ¿Qué quieres crear hoy?
+          </p>
+        )}
+
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium">
           <Sparkles className="w-3.5 h-3.5" />
           Demo MVP — Photoshop · Canva · Shapr3D
