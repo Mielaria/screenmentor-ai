@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { FloatingButton } from "@/components/ScreenMentor/FloatingButton";
 import { MentorPanel } from "@/components/ScreenMentor/MentorPanel";
-import { Bot, Monitor, Mic, Sparkles } from "lucide-react";
+import { Bot, Monitor, Mic, Sparkles, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 type PanelState = "closed" | "open" | "minimized";
 
