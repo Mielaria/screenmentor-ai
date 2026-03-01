@@ -1,14 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FloatingButton } from "@/components/ScreenMentor/FloatingButton";
 import { MentorPanel } from "@/components/ScreenMentor/MentorPanel";
 import { Bot, Monitor, Mic, Sparkles, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 type PanelState = "closed" | "open" | "minimized";
 
 const Index = () => {
   const [panelState, setPanelState] = useState<PanelState>("closed");
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const [fullName, setFullName] = useState<string>("");
+
+  useEffect(() => {
+    if (!user) { setFullName(""); return; }
+    supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("user_id", user.id)
+      .single()
+      .then(({ data }) => {
+        if (data?.full_name) setFullName(data.full_name);
+      });
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 relative overflow-hidden">
