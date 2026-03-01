@@ -96,7 +96,7 @@ const Index = () => {
       </div>
 
       {/* Info section */}
-      <section className="w-full max-w-3xl mx-auto py-10 px-6 text-center space-y-6">
+      <section className="w-full max-w-3xl mx-auto py-4 px-6 text-center space-y-6">
         <div className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-8 sm:p-12 space-y-5">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
             ¿Para quién es <span className="text-primary">ScreenMentor</span>?
